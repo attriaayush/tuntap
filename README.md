@@ -15,7 +15,7 @@ There's [documentation](https://docs.rs/tun-tap) and some
 
 ## Known issues
 
-* Tested only on Linux. Probably doesn't work anywhere else, but pull requests
+* Tested only on MacOS. Probably doesn't work anywhere else, but pull requests
   adding support for other OSes are welcome.
 * The asynchronous interface is very minimal and probably inefficient. It'll
   need to be extended to allow more flexible or efficient use.

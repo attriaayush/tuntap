@@ -18,7 +18,7 @@
 //!
 //! # Known issues
 //!
-//! * It is tested only on Linux and probably doesn't work anywhere else, even though other systems
+//! * It is tested only on MacOS and probably doesn't work anywhere else, even though other systems
 //!   have some TUN/TAP support. Reports that it works (or not) and pull request to add other
 //!   sustem's support are welcome.
 //! * The [`Async`](async/struct.Async.html) interface is very minimal and will require extention
@@ -37,7 +37,7 @@ use std::os::unix::io::{AsRawFd, IntoRawFd, RawFd};
 pub mod async;
 
 extern "C" {
-    fn tuntap_setup(fd: c_int, name: *mut u8, mode: c_int, packet_info: c_int) -> c_int;
+    fn tuntap_setup_for_mac(fd: c_int, name: *mut u8, mode: c_int, packet_info: c_int) -> c_int;
 }
 
 /// The mode in which open the virtual network adapter.
@@ -140,7 +140,15 @@ impl Iface {
         name_buffer.extend_from_slice(ifname.as_bytes());
         name_buffer.extend_from_slice(&[0; 33]);
         let name_ptr: *mut u8 = name_buffer.as_mut_ptr();
-        let result = unsafe { tuntap_setup(fd.as_raw_fd(), name_ptr, mode as c_int, { if packet_info { 1 } else { 0 } }) };
+        let result = unsafe {
+            tuntap_setup_for_mac(fd.as_raw_fd(), name_ptr, mode as c_int, {
+                if packet_info {
+                    1
+                } else {
+                    0
+                }
+            })
+        };
         if result < 0 {
             return Err(Error::last_os_error());
         }
@@ -149,11 +157,7 @@ impl Iface {
                 .to_string_lossy()
                 .into_owned()
         };
-        Ok(Iface {
-            fd,
-            mode,
-            name,
-        })
+        Ok(Iface { fd, mode, name })
     }
 
     /// Returns the mode of the adapter.
